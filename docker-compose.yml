@@ -5,8 +5,22 @@ version: '3.4'
 services:
   webapidocker:
     image: webapidocker
+    container_name: webapidocker
     build:
       context: .
       dockerfile: ./Dockerfile
+    depends_on: [ mssql ]
     ports:
-      - 5000
+      - 5000:5000
+  mssql:
+    image: "mcr.microsoft.com/mssql/server"
+    container_name: mssql
+    hostname: mssql
+    environment:
+      SA_PASSWORD: "Pass123!"
+      ACCEPT_EULA: "Y"
+    restart: unless-stopped
+    ports:
+      # So we can access the database From a tool like JetBrains Rider or SSMS.
+      # Optional for this demo
+      - "11433:1433"
