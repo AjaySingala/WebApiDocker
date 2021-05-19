@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -15,17 +15,13 @@ namespace WebApiDocker.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class VersionController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
 
         private readonly ILogger<WeatherForecastController> _logger;
         private readonly IConfiguration _configuration;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger,
+        public VersionController(ILogger<WeatherForecastController> logger,
             IConfiguration configuration)
         {
             _logger = logger;
@@ -33,24 +29,21 @@ namespace WebApiDocker.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public async Task<string> GetVersion()
         {
-            var rng = new Random();
+            var connectionString = _configuration.GetConnectionString("mssql");
+            var connection = new SqlConnection(connectionString);
+            connection.Open();
 
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
+            var result = await connection.QueryFirstAsync<string>("SELECT @@VERSION");
+
+            return result;
         }
 
         [HttpGet("Test/{name}")]
         public string Test(string name)
         {
-            return $"{name}: Hello there!. This is a test message";
+            return $"{name}: Hello there! This is a test message";
         }
-
     }
 }
